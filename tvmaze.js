@@ -5,7 +5,6 @@ async function searchShows(query) {
     );
     const shows = [];
     res.data.forEach((item) => {
-      console.log(item);
       const show = {};
       show.id = item.show.id;
       show.name = item.show.name;
@@ -74,10 +73,14 @@ function populateShows(shows) {
 
 $('#search-form').on('submit', async function handleSearch(evt) {
   evt.preventDefault();
+
   let query = $('#search-query').val();
   if (!query) return;
+
   $('#episodes-area').hide();
+
   let shows = await searchShows(query);
+
   populateShows(shows);
 });
 
