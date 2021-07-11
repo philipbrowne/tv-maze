@@ -1,7 +1,7 @@
 async function searchShows(query) {
   {
     const res = await axios.get(
-      `http://api.tvmaze.com/search/shows?q=${query}`
+      `https://api.tvmaze.com/search/shows?q=${query}`
     );
     const shows = [];
     res.data.forEach((item) => {
