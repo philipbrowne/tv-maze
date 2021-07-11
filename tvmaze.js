@@ -84,10 +84,6 @@ $('#search-form').on('submit', async function handleSearch(evt) {
   populateShows(shows);
 });
 
-/** Given a show ID, return list of episodes:
- *      { id, name, season, number }
- */
-
 $('.container').on('click', 'button.episode-btn', function (e) {
   const id = $(this).parent().parent().attr('data-show-id');
   const title = $(this).parent().parent().find('h5')[0].innerText;
@@ -95,10 +91,6 @@ $('.container').on('click', 'button.episode-btn', function (e) {
 });
 
 async function getEpisodes(id, title) {
-  // TODO: get episodes from tvmaze
-  //       you can get this by making GET request to
-  //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
-  // TODO: return array-of-episode-info, as described in docstring above
   $('#episodes-area').show();
   const res = await axios.get(`https://api.tvmaze.com/shows/${id}/episodes`);
   const episodes = [];
