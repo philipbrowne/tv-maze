@@ -69,6 +69,7 @@ function populateShows(shows) {
       $showsList.append($item);
     }
   }
+  document.getElementById('search-query').value = '';
 }
 
 $('#search-form').on('submit', async function handleSearch(evt) {
@@ -78,7 +79,6 @@ $('#search-form').on('submit', async function handleSearch(evt) {
   $('#episodes-area').hide();
   let shows = await searchShows(query);
   populateShows(shows);
-  document.getElementById('search-query').value = '';
 });
 
 /** Given a show ID, return list of episodes:
