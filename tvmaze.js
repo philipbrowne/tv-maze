@@ -6,10 +6,12 @@ async function searchShows(query) {
     const shows = [];
     res.data.forEach((item) => {
       const show = {};
+      console.log(item);
       show.id = item.show.id;
       show.name = item.show.name;
       show.summary = item.show.summary;
       show.genre = item.show.genres[0];
+      show.url = item.show.url;
       if (show.genre === undefined) {
         show.genre = '';
       }
@@ -33,8 +35,8 @@ function populateShows(shows) {
          <div class="card" data-show-id="${show.id}">
            <div class="card-body">
            <img class="card-img-top" src="${show.image}">  
-           <h5 class="card-title">${show.name}</h5>
-              <p class="card-text lead">${show.genre}</p>
+           <a href="${show.url}" target="_blank"><h5 class="card-title">${show.name}</h5></a>
+            <p class="card-text lead">${show.genre}</p>
              <p class="card-text">${show.summary}</p>
              <!-- Button trigger modal -->
             <button class="btn btn-primary btn-lg episode-btn" data-bs-toggle="modal" data-bs-target="#episodes">View Episodes</button>
@@ -43,10 +45,16 @@ function populateShows(shows) {
        </div>
       `
       );
+      $showsList.append($item);
+      makeEpisodeModal();
+    }
+  }
+  document.getElementById('search-query').value = '';
+}
 
-      const $episodesArea = $('#episodes-area');
-
-      $episodesArea.html(`
+function makeEpisodeModal() {
+  const $episodesArea = $('#episodes-area');
+  $episodesArea.html(`
       <div class="modal fade" id="episodes" tabindex="-1" aria-labelledby="episodesLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -56,8 +64,8 @@ function populateShows(shows) {
           </div>
           <div class="modal-body">
             <p class="lead" id="eptitle">Episodes</p>
-            <ul id="episodes-list">
-            </ul>
+            <ol id="episodes-list">
+            </ol>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -65,10 +73,6 @@ function populateShows(shows) {
         </div>
       </div>
     </div>`);
-      $showsList.append($item);
-    }
-  }
-  document.getElementById('search-query').value = '';
 }
 
 $('#search-form').on('submit', async function handleSearch(evt) {
@@ -85,7 +89,8 @@ $('#search-form').on('submit', async function handleSearch(evt) {
 });
 
 $('.container').on('click', 'button.episode-btn', function (e) {
-  const id = $(this).parent().parent().attr('data-show-id');
+  let id = $(this).parent().parent().attr('data-show-id');
+  console.log(id);
   const title = $(this).parent().parent().find('h5')[0].innerText;
   getEpisodes(id, title);
 });
@@ -93,30 +98,36 @@ $('.container').on('click', 'button.episode-btn', function (e) {
 async function getEpisodes(id, title) {
   $('#episodes-area').show();
   const res = await axios.get(`https://api.tvmaze.com/shows/${id}/episodes`);
-  const episodes = [];
+  populateEpisodes(res.data, title);
+}
+
+function populateEpisodes(episodes, title) {
   const $episodeList = $('#episodes-list');
+  episodePage(title);
+  episodes.forEach((item) => {
+    const { name, number, summary, url, season } = item;
+    let $newItem = $(
+      `<li class="episode"><a href="${url}" target="_blank">Season ${season}, Ep. ${number} - ${name}</a><br></li>`
+    );
+
+    $episodeList.append($newItem);
+    if (summary) {
+      $newItem.append(summary);
+    }
+    if (item.image !== null) {
+      const newImg = document.createElement('img');
+      newImg.src = item.image.medium;
+      $newItem.append(newImg);
+    }
+  });
+}
+
+function episodePage(title) {
+  const $episodeList = $('#episodes-list');
+  $episodeList.html('');
   const episodeArea = document.getElementById('episodes-area');
   const $episodesLabel = $('#episodesLabel');
   $episodesLabel.text(title);
   const $episodeTitle = $('#eptitle');
   $episodeTitle.html(`<b>${title} - Episodes</b>`);
-  res.data.forEach((item) => {
-    const episode = {};
-    const { name, number, summary, url, season } = item;
-    episodes.push(episode);
-    const newLI = document.createElement('LI');
-    newLI.innerHTML = `<li class="episode">
-    <a href="${url}" target="_blank"><b>S${season}EP${number} - ${name}</b></a><br></li>`;
-    if (summary) {
-      const epSummary = document.createElement('p');
-      epSummary.innerHTML = summary;
-      newLI.append(epSummary);
-    }
-    if (item.image !== null) {
-      const newImg = document.createElement('img');
-      newImg.src = item.image.medium;
-      newLI.append(newImg);
-    }
-    $episodeList.append(newLI);
-  });
 }
